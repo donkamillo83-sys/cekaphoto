@@ -251,8 +251,10 @@ const clamp01=x=>x<0?0:x>1?1:x;
 const luma=(r,g,b)=>0.2126*r+0.7152*g+0.0722*b;
 const wait=ms=>new Promise(r=>setTimeout(r,ms));
 const frame=()=>new Promise(r=>requestAnimationFrame(()=>r()));
-const store={get(k,d){try{const v=localStorage.getItem('glanzwerk:'+k);return v==null?d:JSON.parse(v)}catch(e){return d}},
-             set(k,v){try{localStorage.setItem('glanzwerk:'+k,JSON.stringify(v))}catch(e){}}};
+const store={get(k,d){try{let v=localStorage.getItem('cekaphoto:'+k);
+    if(v==null){v=localStorage.getItem('glanzwerk:'+k);if(v!=null)localStorage.setItem('cekaphoto:'+k,v);} /* Übernahme aus der alten Version */
+    return v==null?d:JSON.parse(v)}catch(e){return d}},
+             set(k,v){try{localStorage.setItem('cekaphoto:'+k,JSON.stringify(v))}catch(e){}}};
 
 const PRESETS={
   natural:{label:'Natürlich',strength:0.7,add:{}},
@@ -269,7 +271,7 @@ const SLIDERS=[
 ];
 const ZERO=()=>({reflect:0,skyfix:0,exposure:0,contrast:0,shadows:0,highlights:0,warmth:0,clarity:0,color:0,sharpen:0,rotate:0});
 
-const APP_VERSION='2.0.0';
+const APP_VERSION='2.0.1';
 const settings=Object.assign({preset:'showroom',format:'4:3',wm:'',maxRes:2560,defaults:{}},store.get('settings',{}));
 if(!settings.defaults||typeof settings.defaults!=='object')settings.defaults={};
 if(!PRESETS[settings.preset])settings.preset='standard';
@@ -283,8 +285,9 @@ async function cloudInit(){
   try{if(!(window.claude&&window.claude.use))return;
     const[db,user]=await Promise.all([window.claude.use('db'),window.claude.use('user')]);if(!db||!user)return;
     const id=await user.id();if(!id)return;
-    cloudRef=db.doc('data/users/'+id+'/glanzwerk');
-    const snap=await cloudRef.get();const local=store.get('settings',null);
+    cloudRef=db.doc('data/users/'+id+'/cekaphoto');
+    let snap=await cloudRef.get();
+    if(!snap.exists){const old=await db.doc('data/users/'+id+'/glanzwerk').get();if(old.exists)snap=old;} /* Übernahme aus der alten Version */const local=store.get('settings',null);
     const remote=snap.exists?snap.data():null;
     if(remote&&remote.settings&&(!local||!local.savedAt||(remote.savedAt||0)>=(local.savedAt||0))){
       Object.assign(settings,remote.settings);if(!PRESETS[settings.preset])settings.preset='showroom';if(!FORMATS[settings.format])settings.format='4:3';

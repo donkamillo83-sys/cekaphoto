@@ -15,7 +15,7 @@ Alles läuft lokal im Browser. Es werden keine Fotos hochgeladen und es wird kei
 
 ## Aufruf
 
-Nach dem Aktivieren von GitHub Pages: `https://BENUTZERNAME.github.io/glanzwerk/`
+Nach dem Aktivieren von GitHub Pages: `https://BENUTZERNAME.github.io/cekaphoto/`
 
 ## Update einspielen
 
